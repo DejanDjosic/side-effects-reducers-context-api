@@ -1,10 +1,12 @@
-import React, { useState, useReducer } from "react";
+import React, { useState, useEffect,useReducer } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
 
 const ACTIONS = { USER_INPUT: "USER_INPUT", INPUT_BLUR: "INPUT_BLUR" };
+
+
 
 const emailReducer = (state, action) => {
   switch (action.type) {
@@ -18,17 +20,23 @@ const emailReducer = (state, action) => {
   }
 };
 
-const passwordReducer = (state, action)=>
-{
+const passwordReducer = (state, action) => {
   switch (action.type) {
     case ACTIONS.USER_INPUT:
-      return { value: action.payload, isValid: action.payload.length > 6 };
+      return {
+        value: action.payload,
+        isValid: action.payload.trim().length > 6,
+      };
     case ACTIONS.INPUT_BLUR:
-      return { value:state.value, isValid: state.value.length>6}
+      return { value: state.value, isValid: state.value.trim().length > 6 };
     default:
       return { value: "", isValid: false };
   }
-}
+
+  
+};
+
+
 
 const Login = (props) => {
   // const [enteredEmail, setEnteredEmail] = useState('');
@@ -37,20 +45,7 @@ const Login = (props) => {
   // const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
 
-  // useEffect(()=>{
-  //  const identifier= setTimeout(() => {
-  //     console.log('checking form validity');
-  //     setFormIsValid(
-  //       enteredEmail.includes('@') && enteredPassword.trim().length > 6
-  //     );
-  //   }, 500);
-
-  //   return ()=>{
-  //     console.log('cleanup')
-  //     clearTimeout(identifier);
-  //   };
-  // },[enteredEmail,enteredPassword])
-
+  
   const [emailState, dispatchEmail] = useReducer(emailReducer, {
     value: "",
     isValid: null,
@@ -61,12 +56,34 @@ const Login = (props) => {
     isValid: null,
   });
 
+
+  const {isValid:emailIsValid}=emailState;
+  const {isValid:passwordIsValid}=passwordState;
+//destructioning an object for better management of useEffect
+
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      console.log("checking form validity");
+      setFormIsValid(emailIsValid && passwordIsValid);
+    }, 500);
+
+    return () => {
+      console.log("cleanup");
+      clearTimeout(identifier);
+    };
+  }, [emailIsValid, passwordIsValid]);
+
+
+
   const emailChangeHandler = (event) => {
     dispatchEmail({ type: ACTIONS.USER_INPUT, payload: event.target.value });
+
+    // setFormIsValid(emailState.value.includes("@") &&passwordState.isValid)
   };
 
   const passwordChangeHandler = (event) => {
     dispatchPassword({ type: ACTIONS.USER_INPUT, payload: event.target.value });
+    // setFormIsValid(emailState.isValid&&passwordState.value.trim().length>6)
   };
 
   const validateEmailHandler = () => {
